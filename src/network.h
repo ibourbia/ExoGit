@@ -1,5 +1,7 @@
 #include <map>
 #include <vector>
+#include <string>
+#include <iostream>
 
 /*!
   This is a network of nodes with bidirectional links: if <b>(a, b)</b> is a link then <b>(b, a)</b> is also a link.
@@ -16,6 +18,7 @@ public:
     Resizes the list of nodes ( \ref values) and also resets all values.
     After this function is called \ref values has size *n* and contains 
     random numbers (normal distribution, mean=0, sd=1).
+    DONE
  */
     void resize(const size_t &n);
     
@@ -24,7 +27,7 @@ public:
   @param[out] success the link was succesfully inserted (true if both nodes exist 
   and the link did not exist yet)
  */
-    bool add_link(const size_t&, const size_t&);
+    bool add_link(const size_t &a, const size_t &b);
     
 /*! Creates random connections between nodes: each node *n* will be linked with *degree(n)* other nodes (randomly chosen) where *degree(n)* is Poisson-distributed.
 
