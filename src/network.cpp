@@ -10,37 +10,54 @@ void Network::resize(const size_t &n){
 
 
 bool Network::add_link(const size_t &a, const size_t &b){
-	std::multimap<size_t, size_t>::iterator itlow(links.lower_bound(a));
-	std::multimap<size_t, size_t>::iterator itup(links.upper_bound(a));
-	if(a==b || b >=values.size() || a>= values.size()) return false;
-	
-	while(itlow!=itup){
-		if(itlow->second == b) return false;
-		std::cout<<"infini 1"<<std::endl;
-	}
-	
-	itlow= links.lower_bound(b);
-	itup=links.upper_bound(b);
-	
-	while(itlow!=itup){
-		if(itlow->second == a) return false;
-		std::cout<<"infini 2"<<std::endl;
-	}
-	
-	links.insert(std::make_pair(a,b));
-	links.insert(std::make_pair(b,a));
 
-	return true;
 	
+	//test
+	std::cout<<"avant : "<<std::endl;
+	for(auto it(links.begin());it!=links.end(); it++){
+		std::cout<<it->first<<" :" << it->second <<std::endl;
+	}
+
+	if(a==b || b >=values.size() || a>= values.size()){
+		return false;
+	}else if(links.count(a) == 0 || links.count(b)==0){
+		links.insert(std::make_pair(a,b));
+		links.insert(std::make_pair(b,a));
+	}else{
+		auto iteq(links.equal_range(a));
+		for(auto it(iteq.first); it != iteq.second; it++){
+			if(it->second == b){
+				return false;
+			}
+		}
+		iteq=links.equal_range(b);
+		for(auto it(iteq.first); it != iteq.second; it++){
+			if(it->second == a){
+				return false;
+			}
+		}
+		links.insert(std::make_pair(a,b));
+		links.insert(std::make_pair(b,a));
+	}
+	//test
+	std::cout<<"apres : "<<std::endl;
+	for(auto it(links.begin());it!=links.end(); it++){
+		std::cout<<it->first<<" :" << it->second <<std::endl;
+	}
+
+	return true;	
 }
 
 
-size_t Network::random_connect(const double&){
+size_t Network::random_connect(const double &a){
 	return 0;
 }
 
-size_t Network::set_values(const std::vector<double>&){
-	return 0;
+size_t Network::set_values(const std::vector<double> &v){
+	size_t size=values.size();
+	if(! values.empty()) values.clear();
+	values=v;
+	return size;
 }
 
 size_t Network::size() const{
@@ -48,7 +65,7 @@ size_t Network::size() const{
 }
 
 size_t Network::degree(const size_t &_n) const{
-	return links.count(values[_n]);
+	return links.count(_n);
 }
 
 double Network::value(const size_t &_n) const{
@@ -79,8 +96,29 @@ std::vector<double> Network::sorted_values() const{
 	return sorted;
 }
 
-std::vector<size_t> Network::neighbors(const size_t&) const{
-	std::vector<size_t> a;
-	a.push_back(1);
-	return a;
+std::vector<size_t> Network::neighbors(const size_t &a) const{
+	
+	try{
+		if(links.empty()) throw std::string("No links found");
+		if(values.empty()) throw std::string("No nodes found");
+		if(a>=values.size()) throw std::out_of_range("Index a bigger than possible number of nodes");
+
+		std::vector<size_t> _neighbors;
+
+	if(links.count(a) != 0 && ! links.empty()){
+		auto iteq(links.equal_range(a));
+
+		for(auto it(iteq.first); it != iteq.second; it++){
+			_neighbors.push_back(it->second);
+		}
+		
+	}
+	
+	return _neighbors;
+		
+	}catch(const std::string &e){
+		std::cerr<<e;
+	}catch(const std::out_of_range &r){
+		std::cerr<<r.what();
+	}
 }
