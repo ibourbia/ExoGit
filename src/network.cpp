@@ -11,11 +11,19 @@ void Network::resize(const size_t &n){
 
 bool Network::add_link(const size_t &a, const size_t &b){
 
-	
+	/*
 	//test
 	std::cout<<"avant : "<<std::endl;
 	for(auto it(links.begin());it!=links.end(); it++){
 		std::cout<<it->first<<" :" << it->second <<std::endl;
+	}
+	//
+	*/
+	try{
+		if(b >=values.size() || a>= values.size()) throw std::out_of_range("In Network::add_link : Impossible de trouver les noeuds correspondants (index trop grand :)");
+	}catch(std::out_of_range &r){
+		std::cerr<<r.what()<<std::endl;
+		return false;
 	}
 
 	if(a==b || b >=values.size() || a>= values.size()){
@@ -39,25 +47,59 @@ bool Network::add_link(const size_t &a, const size_t &b){
 		links.insert(std::make_pair(a,b));
 		links.insert(std::make_pair(b,a));
 	}
+	/*
 	//test
 	std::cout<<"apres : "<<std::endl;
 	for(auto it(links.begin());it!=links.end(); it++){
 		std::cout<<it->first<<" :" << it->second <<std::endl;
 	}
-
+	//
+	*/
 	return true;	
 }
 
 
 size_t Network::random_connect(const double &a){
-	return 0;
+	RandomNumbers random;
+	size_t success(0);
+	std::vector<int> degrees;
+
+	degrees.resize(values.size());
+	random.poisson(degrees,a);
+	links.clear();
+
+	for(size_t i(0); i<degrees.size(); i++){
+		for(int j(0); j<degrees[i]; j++){
+			this->add_link(i,random.uniform_double(0, values.size()-1) );
+			success++;
+		}
+	}
+	return success;
 }
 
 size_t Network::set_values(const std::vector<double> &v){
-	size_t size=values.size();
-	if(! values.empty()) values.clear();
-	values=v;
-	return size;
+	size_t reset(0);
+	try{
+		if(v.empty()){
+			throw std::string("In Network::set_values : No values to be set (please give a non empty vector)");
+		}else{
+			if(values.size()<=v.size()){
+				for(size_t i(0);i<values.size(); i++){
+				values[i]=v[i];
+				reset++;
+				}
+			}
+			else {
+				for(size_t i(0);i<v.size(); i++){
+				values[i]=v[i];
+				reset++;
+				}
+			}
+		}
+	}catch(std::string &e){
+			std::cerr<<e<<std::endl;
+	}
+	return reset;
 }
 
 size_t Network::size() const{
@@ -69,27 +111,17 @@ size_t Network::degree(const size_t &_n) const{
 }
 
 double Network::value(const size_t &_n) const{
-	return values[_n-1];
+	return values[_n];
 }
 
 std::vector<double> Network::sorted_values() const{
 	std::vector<double> sorted(values);
-	double biggest; 
 	try{
-		if(values.empty()) throw std::string("No nodes found (values empty");
+		if(values.empty()) throw std::string("In Network::sorted_values : No nodes found (values empty");
 		else{
-			for(size_t i(0); i<values.size(); i++){
-				for(size_t j(i); j<values.size(); j++){
-					if(sorted[j]>sorted[i]){
-						biggest = sorted[j];
-						sorted[j]=sorted[i];
-						sorted[i]=biggest;
-					}
-				}
-			}
+			std::sort(sorted.begin(), sorted.end());
+			std::reverse(sorted.begin(), sorted.end());
 		}
-	
-	
 	}catch(const std::string &e){
 		std::cerr<<e;
 	}
@@ -99,20 +131,21 @@ std::vector<double> Network::sorted_values() const{
 std::vector<size_t> Network::neighbors(const size_t &a) const{
 	
 	try{
-		if(links.empty()) throw std::string("No links found");
-		if(values.empty()) throw std::string("No nodes found");
-		if(a>=values.size()) throw std::out_of_range("Index a bigger than possible number of nodes");
-
 		std::vector<size_t> _neighbors;
-
-	if(links.count(a) != 0 && ! links.empty()){
-		auto iteq(links.equal_range(a));
-
-		for(auto it(iteq.first); it != iteq.second; it++){
-			_neighbors.push_back(it->second);
-		}
+		if(links.empty()){ 
+			throw std::string("In Network::neighbors : No links found");
+		}else if(values.empty()){
+			throw std::string("In Network::neighbors : No nodes found");
+		}else if(a>=values.size()){
+			throw std::out_of_range("In Network::neighbors : Index given bigger than possible number of nodes");
+		}else if(links.count(a) != 0 && ! links.empty()){
 		
-	}
+			auto iteq(links.equal_range(a));
+
+			for(auto it(iteq.first); it != iteq.second; it++){
+				_neighbors.push_back(it->second);
+			}
+		}
 	
 	return _neighbors;
 		
