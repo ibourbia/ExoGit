@@ -10,15 +10,6 @@ void Network::resize(const size_t &n){
 
 
 bool Network::add_link(const size_t &a, const size_t &b){
-
-	/*
-	//test
-	std::cout<<"avant : "<<std::endl;
-	for(auto it(links.begin());it!=links.end(); it++){
-		std::cout<<it->first<<" :" << it->second <<std::endl;
-	}
-	//
-	*/
 	try{
 		if(b >=values.size() || a>= values.size()) throw std::out_of_range("In Network::add_link : Impossible de trouver les noeuds correspondants (index trop grand :)");
 	}catch(std::out_of_range &r){
@@ -47,14 +38,6 @@ bool Network::add_link(const size_t &a, const size_t &b){
 		links.insert(std::make_pair(a,b));
 		links.insert(std::make_pair(b,a));
 	}
-	/*
-	//test
-	std::cout<<"apres : "<<std::endl;
-	for(auto it(links.begin());it!=links.end(); it++){
-		std::cout<<it->first<<" :" << it->second <<std::endl;
-	}
-	//
-	*/
 	return true;	
 }
 
@@ -84,15 +67,15 @@ size_t Network::set_values(const std::vector<double> &v){
 			throw std::string("In Network::set_values : No values to be set (please give a non empty vector)");
 		}else{
 			if(values.size()<=v.size()){
-				for(size_t i(0);i<values.size(); i++){
-				values[i]=v[i];
+				while(reset<v.size()){
+				values[reset]=v[reset];
 				reset++;
 				}
 			}
 			else {
-				for(size_t i(0);i<v.size(); i++){
-				values[i]=v[i];
-				reset++;
+				while(reset<v.size()){
+					values[reset]=v[reset];
+					reset++;
 				}
 			}
 		}
@@ -129,9 +112,8 @@ std::vector<double> Network::sorted_values() const{
 }
 
 std::vector<size_t> Network::neighbors(const size_t &a) const{
-	
+	std::vector<size_t> _neighbors;
 	try{
-		std::vector<size_t> _neighbors;
 		if(links.empty()){ 
 			throw std::string("In Network::neighbors : No links found");
 		}else if(values.empty()){
@@ -146,12 +128,11 @@ std::vector<size_t> Network::neighbors(const size_t &a) const{
 				_neighbors.push_back(it->second);
 			}
 		}
-	
-	return _neighbors;
 		
 	}catch(const std::string &e){
 		std::cerr<<e;
 	}catch(const std::out_of_range &r){
 		std::cerr<<r.what();
 	}
+	return _neighbors;
 }
